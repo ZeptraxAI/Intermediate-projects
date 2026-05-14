@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+pandas
+numpy
+scikit-learn
+xgboost
+shap
+sqlalchemy
+python-multipart
+pickle5; python_version < '3.8'
+matplotlib
+seaborn
+boto3
+python-dotenv
