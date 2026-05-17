@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aetheris Weather | Glassmorphic Light Hub</title>
+  <!-- SEO & Meta -->
+  <meta name="description" content="Aetheris Weather V2 is a premium light-glassmorphic weather forecasting dashboard featuring dynamic canvas ambient particles, persistent favorites, air quality indexing, and high-fidelity analytics.">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Style Sheet -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="weather-theme-clear">
+  
+  <!-- Particle Background Layer -->
+  <canvas id="ambientCanvas"></canvas>
+  <div class="background-radial-glow"></div>
+  
+  <div class="app-container">
+    
+    <!-- HEADER & CONTROLS -->
+    <header class="app-header glass-card">
+      <div class="logo-area">
+        <span class="logo-icon">⚡</span>
+        <div>
+          <h1>AETHERIS WEATHER</h1>
+          <p class="subtitle">PREMIUM METEOROLOGICAL ENGINE</p>
+        </div>
+      </div>
+      
+      <div class="search-bar-container">
+        <div class="search-box glass-input">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="citySearch" placeholder="Search any city in the world..." autocomplete="off">
+          <button id="searchBtn" class="search-btn">Search</button>
+          <div class="loading-spinner" id="searchLoading"></div>
+        </div>
+        <div class="search-dropdown-menu" id="searchDropdown"></div>
+      </div>
+      
+      <div class="unit-control">
+        <span class="unit-label active" id="labelCelsius">°C</span>
+        <label class="switch">
+          <input type="checkbox" id="unitToggle">
+          <span class="slider round"></span>
+        </label>
+        <span class="unit-label" id="labelFahrenheit">°F</span>
+      </div>
+    </header>
+
+    <!-- HAZARDS & WEATHER ALERTS BANNER -->
+    <div id="hazardBanner" class="hazard-banner-container"></div>
+
+    <!-- FAVORITES BAR / PINNED DOCK -->
+    <section class="favorites-section" id="favoritesSection">
+      <div class="section-title-row">
+        <h3>PINNED LOCATIONS</h3>
+        <span class="favorites-count" id="favsCount">0 pinned</span>
+      </div>
+      <div class="favorites-dock" id="favoritesDock">
+        <!-- Dynamically populated with pinned city cards -->
+      </div>
+    </section>
+
+    <!-- MAIN FORECAST CONTENT GRID -->
+    <main class="dashboard-grid">
+      
+      <!-- HERO CURRENT CONDITIONS CARD -->
+      <section class="hero-card glass-card" id="currentWeatherCard">
+        <button class="pin-city-btn" id="pinCityBtn" title="Pin city to favorites">
+          <svg class="pin-svg" viewBox="0 0 24 24">
+            <path d="M16 12V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v8c0 1.1-.9 2-2 2v2h14v-2c-1.1 0-2-.9-2-2zM4 20h16v2H4z"/>
+          </svg>
+        </button>
+        
+        <div class="hero-main-info">
+          <div class="location-details">
+            <h2 id="cityName">London</h2>
+            <p id="countryName" class="country-badge">United Kingdom</p>
+            <p id="localTime" class="time-stamp">Local Time: 12:45</p>
+          </div>
+          <div class="temp-condition-block">
+            <div class="current-temp" id="currentTemp">18°</div>
+            <p class="weather-description" id="weatherDesc">Partly Cloudy</p>
+          </div>
+        </div>
+        
+        <div class="hero-weather-illustration">
+          <div class="weather-icon-glow" id="weatherGlow"></div>
+          <div class="weather-svg-container" id="mainWeatherSvg">
+            <!-- Dynamic SVG injected by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- METRICS ANALYTICS PANEL (CHART.JS + DYNAMIC TABS) -->
+      <section class="analytics-card glass-card">
+        <div class="analytics-header">
+          <h3>METRIC ANALYTICS</h3>
+          <div class="chart-tab-bar">
+            <button class="chart-tab active" data-tab="temp">Temp & Rain</button>
+            <button class="chart-tab" data-tab="wind">Wind Currents</button>
+            <button class="chart-tab" data-tab="humidity">Humidity & Dew</button>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="forecastChart"></canvas>
+        </div>
+      </section>
+
+      <!-- 6-DIAGNOSTIC GRID -->
+      <section class="diagnostics-grid">
+        
+        <!-- Metric 1: Feels Like -->
+        <div class="metric-card glass-card">
+          <div class="metric-icon felt-icon">🌡️</div>
+          <div class="metric-data">
+            <span class="metric-title">Feels Like</span>
+            <span class="metric-value" id="valFeelsLike">16°C</span>
+            <span class="metric-status" id="descFeelsLike">Cool</span>
+          </div>
+        </div>
+
+        <!-- Metric 2: Wind Status -->
+        <div class="metric-card glass-card">
+          <div class="metric-icon wind-icon">💨</div>
+          <div class="metric-data">
+            <span class="metric-title">Wind Velocity</span>
+            <span class="metric-value" id="valWind">12.5 km/h</span>
+            <div class="wind-direction-badge">
+              <span class="compass-arrow" id="windArrow">↑</span>
+              <span id="valWindDir">NE (45°)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metric 3: Humidity -->
+        <div class="metric-card glass-card">
+          <div class="metric-icon hum-icon">💧</div>
+          <div class="metric-data">
+            <span class="metric-title">Relative Humidity</span>
+            <span class="metric-value" id="valHumidity">62%</span>
+            <span class="metric-status" id="descHumidity">Pleasant</span>
+          </div>
+        </div>
+
+        <!-- Metric 4: UV Index -->
+        <div class="metric-card glass-card">
+          <div class="metric-icon uv-icon">☀️</div>
+          <div class="metric-data">
+            <span class="metric-title">UV Radiation</span>
+            <span class="metric-value" id="valUV">4.2</span>
+            <span class="metric-level-badge" id="badgeUV">Moderate</span>
+          </div>
+        </div>
+
+        <!-- Metric 5: Cloud Cover -->
+        <div class="metric-card glass-card">
+          <div class="metric-icon cloud-icon">☁️</div>
+          <div class="metric-data">
+            <span class="metric-title">Cloud Shield</span>
+            <span class="metric-value" id="valClouds">45%</span>
+            <span class="metric-status" id="descClouds">Scattered Clouds</span>
+          </div>
+        </div>
+
+        <!-- Metric 6: Comfort Index -->
+        <div class="metric-card glass-card">
+          <div class="metric-icon comfort-icon">🧠</div>
+          <div class="metric-data">
+            <span class="metric-title">Comfort Index</span>
+            <span class="metric-value" id="valComfort">84%</span>
+            <div class="comfort-bar-bg">
+              <div class="comfort-bar-fill" id="barComfort" style="width: 84%"></div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- HOURLY FORECAST SLIDER -->
+      <section class="hourly-card glass-card">
+        <h3>HOURLY FORECAST (24 HOUR GRID)</h3>
+        <div class="hourly-slider" id="hourlySlider">
+          <!-- Dynamic hour list items -->
+        </div>
+      </section>
+
+      <!-- 7-DAY OUTLOOK GRID -->
+      <section class="weekly-card glass-card">
+        <h3>7-DAY METEOROLOGICAL OUTLOOK</h3>
+        <div class="weekly-list" id="weeklyList">
+          <!-- Dynamic 7-day items -->
+        </div>
+      </section>
+
+      <!-- AIR QUALITY INDEX (AQI) METRIC PANEL -->
+      <section class="aqi-card glass-card">
+        <h3>AIR QUALITY INDEX</h3>
+        <div class="aqi-main">
+          <div class="aqi-number-block">
+            <span class="aqi-value" id="valAQI">--</span>
+            <span class="aqi-badge" id="badgeAQI">Scanning...</span>
+          </div>
+          <div class="aqi-gauge-bg">
+            <div class="aqi-gauge-fill" id="barAQI" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="aqi-breakdown">
+          <div class="aqi-sub-metric">
+            <span class="aqi-sub-title">PM2.5 (Fine)</span>
+            <span class="aqi-sub-val" id="valPM25">-- µg/m³</span>
+          </div>
+          <div class="aqi-sub-metric">
+            <span class="aqi-sub-title">PM10 (Dust)</span>
+            <span class="aqi-sub-val" id="valPM10">-- µg/m³</span>
+          </div>
+          <div class="aqi-sub-metric">
+            <span class="aqi-sub-title">Ozone (O₃)</span>
+            <span class="aqi-sub-val" id="valO3">-- µg/m³</span>
+          </div>
+          <div class="aqi-sub-metric">
+            <span class="aqi-sub-title">Nitrogen (NO₂)</span>
+            <span class="aqi-sub-val" id="valNO2">-- µg/m³</span>
+          </div>
+        </div>
+      </section>
+
+    </main>
+    
+    <!-- FOOTER -->
+    <footer class="app-footer">
+      <p>Aetheris Weather Diagnostics Hub. Power supplied by open-source meteorological models.</p>
+      <p class="api-attribution">Data sourced from Open-Meteo &copy; 2026. Zero tracking cookies utilized.</p>
+    </footer>
+    
+  </div>
+
+  <!-- JavaScript file -->
+  <script src="app.js"></script>
+</body>
+</html>
