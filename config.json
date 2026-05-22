@@ -1,0 +1,16 @@
+{
+    "mock_email": true,
+    "active_sources": [
+        "Hacker News",
+        "TechCrunch",
+        "BBC News"
+    ],
+    "smtp": {
+        "host": "",
+        "port": 587,
+        "sender": "",
+        "password": "",
+        "use_ssl": false,
+        "subject": "News Scraper - Curated Daily Summary"
+    }
+}

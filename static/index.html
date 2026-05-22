@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Scraper Dashboard</title>
+    <!-- Modern Typography: Plus Jakarta Sans & JetBrains Mono for code/logs -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons for Premium Outline Aesthetics -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Premium Top Ambient Glow Bar -->
+    <div class="glow-bar"></div>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo">
+                    <i data-lucide="radio-receiver"></i>
+                </div>
+                <div class="brand-text">
+                    <h2>NewsPulse</h2>
+                    <span>Scraper Engine</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-tab="dashboard">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-item" data-tab="sources">
+                    <i data-lucide="database"></i>
+                    <span>Scraper Sources</span>
+                </button>
+                <button class="nav-item" data-tab="email">
+                    <i data-lucide="mail"></i>
+                    <span>Email Campaign</span>
+                </button>
+                <button class="nav-item" data-tab="settings">
+                    <i data-lucide="settings"></i>
+                    <span>Settings</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="connection-status">
+                    <span class="status-dot online"></span>
+                    <span>Backend Connected</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Body -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-left">
+                    <h1 id="page-title">Dashboard</h1>
+                    <p id="page-subtitle">Real-time curation from across the technology landscape.</p>
+                </div>
+                <div class="header-actions">
+                    <button id="trigger-scrape-btn" class="btn btn-primary">
+                        <i data-lucide="refresh-cw" class="icon-spin-hover"></i>
+                        <span>Fetch Live News</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Notification Toast Container -->
+            <div id="toast-container" class="toast-container"></div>
+
+            <!-- Content Screens -->
+            <div class="content-body">
+                
+                <!-- SCREEN 1: DASHBOARD -->
+                <div id="tab-dashboard" class="tab-screen active">
+                    <!-- KPI Metric Grid -->
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-icon bg-indigo">
+                                <i data-lucide="newspaper"></i>
+                            </div>
+                            <div class="metric-info">
+                                <span class="metric-label">Total Articles</span>
+                                <h3 id="metric-total-articles" class="metric-value">0</h3>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon bg-emerald">
+                                <i data-lucide="check-circle-2"></i>
+                            </div>
+                            <div class="metric-info">
+                                <span class="metric-label">Active Sources</span>
+                                <h3 id="metric-active-sources" class="metric-value">0</h3>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon bg-amber">
+                                <i data-lucide="activity"></i>
+                            </div>
+                            <div class="metric-info">
+                                <span class="metric-label">Last Operation</span>
+                                <h3 id="metric-last-operation" class="metric-value">Never</h3>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon bg-violet">
+                                <i data-lucide="send"></i>
+                            </div>
+                            <div class="metric-info">
+                                <span class="metric-label">Sent Summaries</span>
+                                <h3 id="metric-sent-emails" class="metric-value">0</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Articles Table Section -->
+                    <div class="section-card">
+                        <div class="section-header">
+                            <div class="section-title-wrapper">
+                                <i data-lucide="align-left" class="section-icon"></i>
+                                <h2>Latest Articles Feed</h2>
+                            </div>
+                            <div class="table-controls">
+                                <div class="search-box">
+                                    <i data-lucide="search"></i>
+                                    <input type="text" id="search-input" placeholder="Search headlines or descriptions...">
+                                </div>
+                                <div class="filter-box">
+                                    <i data-lucide="filter"></i>
+                                    <select id="source-filter">
+                                        <option value="all">All Sources</option>
+                                        <option value="Hacker News">Hacker News</option>
+                                        <option value="TechCrunch">TechCrunch</option>
+                                        <option value="BBC News">BBC News</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="table-container">
+                            <table class="news-table">
+                                <thead>
+                                    <tr>
+                                        <th>Source</th>
+                                        <th>Article Details</th>
+                                        <th>Author</th>
+                                        <th>Published</th>
+                                        <th style="text-align: right;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="news-tbody">
+                                    <tr>
+                                        <td colspan="5" class="table-empty-state">
+                                            <div class="empty-icon-wrapper">
+                                                <i data-lucide="inbox"></i>
+                                            </div>
+                                            <h3>No Scraped Articles</h3>
+                                            <p>Click "Fetch Live News" above to trigger your first scraping run!</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SCREEN 2: SOURCES -->
+                <div id="tab-sources" class="tab-screen">
+                    <div class="section-card max-width-md">
+                        <div class="section-header">
+                            <div class="section-title-wrapper">
+                                <i data-lucide="database" class="section-icon text-emerald"></i>
+                                <h2>Scraping Source Configurations</h2>
+                            </div>
+                        </div>
+                        <p class="section-desc">Toggle the news outlets and sources that will be targeted during subsequent scraping sweeps.</p>
+                        
+                        <div class="source-toggles-list">
+                            <div class="source-item">
+                                <div class="source-item-meta">
+                                    <span class="source-badge hn-badge">HN</span>
+                                    <div>
+                                        <h4>Hacker News</h4>
+                                        <p>Top articles, tech discoveries, scores, and developer discussions.</p>
+                                    </div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="source-hn" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-item-meta">
+                                    <span class="source-badge tc-badge">TC</span>
+                                    <div>
+                                        <h4>TechCrunch</h4>
+                                        <p>Comprehensive coverage of startups, technology innovations, and funding rounds.</p>
+                                    </div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="source-tc" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="source-item">
+                                <div class="source-item-meta">
+                                    <span class="source-badge bbc-badge">BBC</span>
+                                    <div>
+                                        <h4>BBC News - World</h4>
+                                        <p>Global headlines, international events, and objective news coverage.</p>
+                                    </div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="source-bbc" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <button id="save-sources-btn" class="btn btn-emerald">
+                                <i data-lucide="check"></i>
+                                <span>Save Active Sources</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SCREEN 3: EMAIL CAMPAIGN -->
+                <div id="tab-email" class="tab-screen">
+                    <div class="grid-two-cols">
+                        <!-- Email Delivery Form -->
+                        <div class="section-card">
+                            <div class="section-header">
+                                <div class="section-title-wrapper">
+                                    <i data-lucide="mail" class="section-icon text-indigo"></i>
+                                    <h2>Send Newsletter Digest</h2>
+                                </div>
+                            </div>
+                            <p class="section-desc">Compile current headlines into a responsive, elegant newsletter. Test it instantly with mock mode or real delivery.</p>
+
+                            <form id="email-form" class="settings-form">
+                                <div class="form-group">
+                                    <label for="email-recipient">Recipient Email</label>
+                                    <div class="input-with-icon">
+                                        <i data-lucide="user"></i>
+                                        <input type="email" id="email-recipient" placeholder="subscriber@example.com" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="email-custom-msg">Custom Note (Optional)</label>
+                                    <textarea id="email-custom-msg" rows="4" placeholder="Hello team! Here is your curated technology update for today..."></textarea>
+                                    <span class="form-help">This message will appear prominently at the top of the email template.</span>
+                                </div>
+
+                                <div class="button-row">
+                                    <button type="button" id="preview-email-btn" class="btn btn-secondary">
+                                        <i data-lucide="eye"></i>
+                                        <span>Preview Template</span>
+                                    </button>
+                                    <button type="submit" id="send-email-btn" class="btn btn-primary">
+                                        <i data-lucide="send"></i>
+                                        <span>Dispatch Newsletter</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Email Preview Pane -->
+                        <div class="section-card">
+                            <div class="section-header">
+                                <div class="section-title-wrapper">
+                                    <i data-lucide="smartphone" class="section-icon text-violet"></i>
+                                    <h2>Newsletter Sandbox</h2>
+                                </div>
+                            </div>
+                            <p class="section-desc">Live sandboxed preview of the generated responsive newsletter summary.</p>
+                            
+                            <div class="email-preview-container">
+                                <div class="preview-device-header">
+                                    <div class="device-dots">
+                                        <span class="dot red"></span>
+                                        <span class="dot yellow"></span>
+                                        <span class="dot green"></span>
+                                    </div>
+                                    <span class="device-title">digest_newsletter.html</span>
+                                </div>
+                                <iframe id="email-preview-iframe" class="email-preview-iframe" srcdoc="<div style='display:flex;justify-content:center;align-items:center;height:100%;font-family:sans-serif;color:#94a3b8;font-size:14px;'>Click 'Preview Template' to load the live-rendered newsletter here.</div>"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SCREEN 4: SETTINGS -->
+                <div id="tab-settings" class="tab-screen">
+                    <div class="section-card max-width-md">
+                        <div class="section-header">
+                            <div class="section-title-wrapper">
+                                <i data-lucide="sliders" class="section-icon text-indigo"></i>
+                                <h2>SMTP & App Settings</h2>
+                            </div>
+                        </div>
+                        <p class="section-desc">Configure SMTP details for real email dispatching or toggle the safe mock preview mode.</p>
+
+                        <div class="setting-toggle-card">
+                            <div class="setting-toggle-meta">
+                                <h3>Mock Email Delivery Mode</h3>
+                                <p>When enabled, summaries are logged to the backend and previewed locally. Disable to send real emails via SMTP.</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="settings-mock-email" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="divider"></div>
+
+                        <div id="smtp-settings-fields" class="smtp-fields-wrapper disabled">
+                            <h3 class="subsection-title">SMTP Server Configuration</h3>
+                            
+                            <form id="smtp-form" class="settings-form">
+                                <div class="form-grid-two">
+                                    <div class="form-group">
+                                        <label for="smtp-host">SMTP Host</label>
+                                        <input type="text" id="smtp-host" placeholder="smtp.gmail.com">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="smtp-port">SMTP Port</label>
+                                        <input type="number" id="smtp-port" placeholder="587">
+                                    </div>
+                                </div>
+                                <div class="form-grid-two">
+                                    <div class="form-group">
+                                        <label for="smtp-sender">Sender Email Address</label>
+                                        <input type="email" id="smtp-sender" placeholder="your-email@gmail.com">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="smtp-password">App Password / Password</label>
+                                        <input type="password" id="smtp-password" placeholder="••••••••••••••••">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="smtp-ssl">
+                                        <span>Use Secure Connection (SSL/TLS)</span>
+                                    </label>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="card-footer">
+                            <button id="save-settings-btn" class="btn btn-primary">
+                                <i data-lucide="check"></i>
+                                <span>Save Settings</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Initialization and SVG Icons Activation -->
+    <script src="app.js"></script>
+</body>
+</html>
