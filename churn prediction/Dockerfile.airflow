@@ -1,0 +1,15 @@
+FROM apache/airflow:2.9.1-python3.10
+
+USER root
+# Install any system-level dependencies if needed
+RUN apt-get update && apt-get install -y libgomp1 && rm -rf /var/lib/apt/lists/*
+
+USER airflow
+# Install ML and AWS dependencies
+RUN pip install --no-cache-dir \
+    pandas \
+    scikit-learn \
+    xgboost \
+    boto3 \
+    sqlalchemy \
+    apache-airflow-providers-amazon
