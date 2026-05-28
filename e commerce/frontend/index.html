@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPrice | E-Commerce Price Tracker & Predictor</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.394.0/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-logo"><i data-lucide="shopping-cart"></i></div>
+                <div class="brand-name">SmartPrice</div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-tab="dashboard">
+                    <i class="icon" data-lucide="layout-dashboard"></i> Dashboard
+                </button>
+                <button class="nav-btn" data-tab="insights">
+                    <i class="icon" data-lucide="trending-up"></i> Price Insights
+                </button>
+                <button class="nav-btn" data-tab="alerts">
+                    <i class="icon" data-lucide="bell"></i> Alert Center
+                </button>
+                <button class="nav-btn" data-tab="settings">
+                    <i class="icon" data-lucide="settings"></i> Control Panel
+                </button>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="status-indicator">
+                    <span class="pulse-dot"></span>
+                    <span>Monitoring Daemon Active</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top bar -->
+            <header class="top-bar">
+                <div class="welcome">
+                    <h1>E-Commerce Tracker & Predictor</h1>
+                    <p class="subtitle">Scrape Amazon/Flipkart prices, forecast trends, and automate email deals.</p>
+                </div>
+                <div class="actions">
+                    <button id="scrape-all-btn" class="btn btn-secondary">
+                        <i class="icon" data-lucide="refresh-cw"></i> Scan All Prices
+                    </button>
+                    <button id="add-product-modal-btn" class="btn btn-primary">
+                        <i class="icon" data-lucide="plus"></i> Add Product
+                    </button>
+                </div>
+            </header>
+
+            <!-- TAB: Dashboard -->
+            <section id="tab-dashboard" class="tab-pane active">
+                <div class="stats-overview">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i data-lucide="package"></i></div>
+                        <div class="stat-details">
+                            <h3>Tracked Products</h3>
+                            <p id="stat-count">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i data-lucide="bell"></i></div>
+                        <div class="stat-details">
+                            <h3>Active Alerts</h3>
+                            <p id="stat-alerts">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i data-lucide="flame"></i></div>
+                        <div class="stat-details">
+                            <h3>Deals Triggered</h3>
+                            <p id="stat-deals">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-header">
+                    <h2>Tracked Products Catalog</h2>
+                    <button id="export-excel-btn" class="btn btn-export">
+                        <i class="icon" data-lucide="download"></i> Export Excel report
+                    </button>
+                </div>
+
+                <!-- Products Grid -->
+                <div id="products-grid" class="products-grid">
+                    <!-- Products will be dynamically generated here -->
+                    <div class="loading-spinner">Loading tracking dashboard...</div>
+                </div>
+            </section>
+
+            <!-- TAB: Insights -->
+            <section id="tab-insights" class="tab-pane">
+                <div class="insights-container">
+                    <div class="insights-selector-panel">
+                        <h2>Select Product to Analyze</h2>
+                        <ul id="insights-product-list" class="insights-list">
+                            <!-- Populated dynamically -->
+                        </ul>
+                    </div>
+
+                    <div class="insights-details-panel">
+                        <div id="no-product-selected" class="empty-state">
+                            <span class="empty-icon"><i data-lucide="trending-up"></i></span>
+                            <h3>No Product Selected</h3>
+                            <p>Select a product from the list on the left to view historical price charts and forecasts.</p>
+                        </div>
+
+                        <div id="insights-charts-view" class="insights-charts-view hidden">
+                            <div class="insights-header">
+                                <div class="product-meta">
+                                    <span id="insights-store-badge" class="store-badge">Amazon</span>
+                                    <h2 id="insights-title">Product Title</h2>
+                                </div>
+                                <div class="price-bubble">
+                                    <span class="label">Current Price</span>
+                                    <span id="insights-price" class="price">₹0.00</span>
+                                </div>
+                            </div>
+
+                            <!-- Analysis Grid -->
+                            <div class="analysis-grid">
+                                <div class="chart-container">
+                                    <h3>Price History & 7-Day Forecast</h3>
+                                    <canvas id="priceChart"></canvas>
+                                </div>
+
+                                <div class="metrics-container">
+                                    <h3>ML Predictions & Analytics</h3>
+                                    
+                                    <div class="probability-card">
+                                        <div class="prob-header">
+                                            <span>Price Drop Probability (3 Days)</span>
+                                            <span id="insights-prob-val" class="prob-value">75%</span>
+                                        </div>
+                                        <div class="progress-bar-bg">
+                                            <div id="insights-prob-bar" class="progress-bar" style="width: 75%"></div>
+                                        </div>
+                                        <p id="insights-prob-desc" class="analytics-desc">Price is trending downwards with moderate daily changes.</p>
+                                    </div>
+
+                                    <div class="stats-grid">
+                                        <div class="mini-stat">
+                                            <span class="label">Lowest Recorded</span>
+                                            <span id="insights-min" class="value text-success">₹0.00</span>
+                                        </div>
+                                        <div class="mini-stat">
+                                            <span class="label">Highest Recorded</span>
+                                            <span id="insights-max" class="value text-danger">₹0.00</span>
+                                        </div>
+                                        <div class="mini-stat">
+                                            <span class="label">Average Price</span>
+                                            <span id="insights-avg" class="value">₹0.00</span>
+                                        </div>
+                                        <div class="mini-stat">
+                                            <span class="label">Daily Volatility</span>
+                                            <span id="insights-vol" class="value">Low</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="buy-verdict" id="buy-verdict-box">
+                                        <div class="verdict-icon"><i data-lucide="lightbulb"></i></div>
+                                        <div>
+                                            <h4 id="verdict-title">Waiting Strategy</h4>
+                                            <p id="verdict-desc">We predict a drop in price soon. Recommend waiting for target threshold.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB: Alerts -->
+            <section id="tab-alerts" class="tab-pane">
+                <div class="alerts-container">
+                    <div class="glass-card new-alert-card">
+                        <h2>Create New Price Alert</h2>
+                        <form id="new-alert-form">
+                            <div class="form-group">
+                                <label for="alert-product">Select Product</label>
+                                <select id="alert-product" required>
+                                    <option value="" disabled selected>Choose a tracked item...</option>
+                                    <!-- Dynamic list -->
+                                </select>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="alert-email">Notification Email</label>
+                                    <input type="email" id="alert-email" placeholder="e.g. deals@example.com" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="alert-target">Target Price (INR)</label>
+                                    <input type="number" id="alert-target" step="0.01" placeholder="e.g. 999" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary form-submit">Enable Price Alert</button>
+                        </form>
+                    </div>
+
+                    <div class="glass-card alerts-list-card">
+                        <h2>Alert Rules Monitor</h2>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Target Price</th>
+                                        <th>Current Price</th>
+                                        <th>Target Email</th>
+                                        <th>Condition</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="alerts-table-body">
+                                    <!-- Dynamic rows -->
+                                    <tr>
+                                        <td colspan="6" class="table-empty">No active alerts configured.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB: Settings / Control Panel -->
+            <section id="tab-settings" class="tab-pane">
+                <div class="settings-grid">
+                    <!-- Left: Settings forms -->
+                    <div class="settings-forms-col">
+                        <div class="glass-card">
+                            <h2>Email Alerts (SMTP Configuration)</h2>
+                            <p class="card-desc">Configure SMTP parameters to dispatch real emails. Leaving this disabled stores alerts in the local dashboard log preview.</p>
+                            
+                            <form id="smtp-config-form">
+                                <div class="form-group">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="smtp-enabled">
+                                        <span class="slider"></span>
+                                        <span class="toggle-label">Enable SMTP Dispatch</span>
+                                    </label>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="smtp-server">SMTP Server</label>
+                                        <input type="text" id="smtp-server" value="smtp.gmail.com" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="smtp-port">SMTP Port</label>
+                                        <input type="number" id="smtp-port" value="587" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="smtp-email">Sender Email</label>
+                                    <input type="email" id="smtp-email" placeholder="yourmail@gmail.com">
+                                </div>
+                                <div class="form-group">
+                                    <label for="smtp-password">Sender Password / App Password</label>
+                                    <input type="password" id="smtp-password" placeholder="••••••••••••••••">
+                                </div>
+                                <button type="submit" class="btn btn-secondary">Save SMTP Config</button>
+                            </form>
+                        </div>
+
+                        <div class="glass-card developer-actions">
+                            <h2>System Controls</h2>
+                            <p class="card-desc">Simulate data events or reset system caches for demonstration.</p>
+                            <div class="btn-group">
+                                <button id="btn-reset-db" class="btn btn-danger"><i class="icon" data-lucide="alert-triangle"></i> Full Database Reset</button>
+                                <button id="btn-clear-logs" class="btn btn-secondary"><i class="icon" data-lucide="trash-2"></i> Clear Alert Log</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Live Notification Log (WOW FACTOR) -->
+                    <div class="settings-logs-col">
+                        <div class="glass-card logs-card">
+                            <div class="logs-header">
+                                <h2>Alert Mailbox Inbox (Simulated/Offline)</h2>
+                                <span class="badge">Real-time Feed</span>
+                            </div>
+                            <p class="card-desc">This panel displays the exact HTML notification emails rendered and logged in the background when prices drop below user thresholds.</p>
+                            
+                            <div id="alerts-mailbox-preview" class="mailbox-scrollbox">
+                                <!-- HTML templates generated by smtplib logger -->
+                                <p style='color:#94a3b8; font-family:sans-serif; text-align:center;'>No alerts triggered yet. Add a product, set an alert below its price, and trigger a manual update to see notifications here!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MODAL: Add Product -->
+    <div id="add-product-modal" class="modal">
+        <div class="modal-content modal-wide glass-card">
+            <span id="close-modal" class="modal-close">&times;</span>
+            <h2>Add Product to Track</h2>
+            <p class="modal-desc">Browse our curated catalog or paste a link manually to start tracking prices.</p>
+
+            <!-- Modal Tabs -->
+            <div class="modal-tabs">
+                <button class="modal-tab-btn active" data-modal-tab="catalog"><i class="modal-tab-icon" data-lucide="grid"></i> Browse Catalog</button>
+                <button class="modal-tab-btn" data-modal-tab="manual"><i class="modal-tab-icon" data-lucide="link"></i> Paste URL Manually</button>
+            </div>
+
+            <!-- TAB: Catalog Browser -->
+            <div id="modal-tab-catalog" class="modal-tab-pane active">
+                <!-- Search + Filter bar -->
+                <div class="catalog-toolbar">
+                    <div class="catalog-search-wrap">
+                        <i class="catalog-search-icon" data-lucide="search"></i>
+                        <input type="text" id="catalog-search" placeholder="Search products... (e.g. iPhone, Sony, MacBook)">
+                    </div>
+                    <div class="catalog-filters" id="catalog-filters">
+                        <button class="filter-chip active" data-category="All">All</button>
+                        <button class="filter-chip" data-category="Smartphones">Phones</button>
+                        <button class="filter-chip" data-category="Laptops">Laptops</button>
+                        <button class="filter-chip" data-category="Audio">Audio</button>
+                        <button class="filter-chip" data-category="Smartwatches">Watches</button>
+                        <button class="filter-chip" data-category="Tablets">Tablets</button>
+                        <button class="filter-chip" data-category="Cameras">Cameras</button>
+                    </div>
+                </div>
+
+                <!-- Catalog Grid -->
+                <div id="catalog-grid" class="catalog-grid">
+                    <div class="loading-spinner">Loading product catalog...</div>
+                </div>
+
+                <!-- Optional alert setup for catalog -->
+                <div class="catalog-alert-setup glass-card" style="margin-top:20px;">
+                    <h3>⚡ Set Price Alert (Optional)</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="catalog-alert-email">Notification Email</label>
+                            <input type="email" id="catalog-alert-email" placeholder="e.g. buyer@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="catalog-alert-target">Alert at Price (INR)</label>
+                            <input type="number" id="catalog-alert-target" step="0.01" placeholder="e.g. 15000">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: Manual URL -->
+            <div id="modal-tab-manual" class="modal-tab-pane">
+                <form id="add-product-form">
+                    <div class="form-group">
+                        <label for="prod-url">Product URL (Amazon or Flipkart)</label>
+                        <input type="url" id="prod-url" placeholder="https://www.amazon.in/dp/..." required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="prod-force-mock" checked>
+                            <span class="slider"></span>
+                            <span class="toggle-label">Demonstration Mode (pre-fills 30-day mock price history)</span>
+                        </label>
+                    </div>
+
+                    <div class="alert-setup-group">
+                        <h3>Set Instant Price Alert (Optional)</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="prod-alert-email">Notification Email</label>
+                                <input type="email" id="prod-alert-email" placeholder="e.g. buyer@example.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="prod-alert-target">Alert Trigger Price (INR)</label>
+                                <input type="number" id="prod-alert-target" step="0.01" placeholder="e.g. 15000">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" id="btn-cancel-modal" class="btn btn-secondary">Cancel</button>
+                        <button type="submit" id="btn-submit-product" class="btn btn-primary">Start Tracking</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification Toast -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

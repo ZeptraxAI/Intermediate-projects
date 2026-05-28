@@ -1,0 +1,20 @@
+# Environments
+venv/
+.env
+
+# Python
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local database and logs
+logs/*.log
+logs/*.html
+logs/alerts_preview.html
+logs/alerts.log
+.pytest_cache/
+
+# OS files
+.DS_Store
+Thumbs.db
