@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Health Monitor & Reporter</title>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- Ambient Backdrop Glow Spots -->
+    <div class="bg-glow-bubble bubble-1"></div>
+    <div class="bg-glow-bubble bubble-2"></div>
+    <div class="bg-glow-bubble bubble-3"></div>
+
+    <div class="container">
+        
+        <!-- Header -->
+        <header>
+            <div class="logo-section">
+                <div class="logo-icon">🌐</div>
+                <div class="logo-text">
+                    <h1>Website Health Monitor</h1>
+                    <p>DevOps Uptime Diagnostic & Telemetry Dashboard</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="/api/alerts-preview" target="_blank" class="btn btn-secondary">
+                    <i class="fa-solid fa-envelope-open-text"></i> Preview Email Alert
+                </a>
+                <button id="btn-force-check" class="btn btn-secondary">
+                    <i class="fa-solid fa-arrows-rotate"></i> Run Health Check
+                </button>
+                <a href="/api/export" class="btn btn-primary" id="btn-export-excel">
+                    <i class="fa-solid fa-file-excel"></i> Export Excel Report
+                </a>
+            </div>
+        </header>
+
+        <!-- KPI Cards Grid -->
+        <div class="kpi-grid">
+            <div class="kpi-card kpi-card-with-ring">
+                <div>
+                    <span class="kpi-label">Global Service Uptime</span>
+                    <span class="kpi-val" id="kpi-uptime">--%</span>
+                    <span class="kpi-sub" id="kpi-uptime-desc">Weighted cluster average</span>
+                </div>
+                <div class="kpi-card-ring-wrapper">
+                    <svg class="kpi-svg-ring" width="60" height="60">
+                        <circle class="kpi-svg-bg" cx="30" cy="30" r="26"></circle>
+                        <circle class="kpi-svg-progress" id="kpi-uptime-ring" cx="30" cy="30" r="26" stroke-dasharray="163.36" stroke-dashoffset="163.36"></circle>
+                    </svg>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Median Latency</span>
+                <span class="kpi-val" id="kpi-latency">-- ms</span>
+                <span class="kpi-sub" id="kpi-latency-desc">Fastest response profile</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Active Nodes</span>
+                <span class="kpi-val" id="kpi-active-nodes">0/0</span>
+                <span class="kpi-sub" id="kpi-active-nodes-desc">Configured cluster targets</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Total Logs Recorded</span>
+                <span class="kpi-val" id="kpi-total-checks">--</span>
+                <span class="kpi-sub" id="kpi-total-checks-desc">Raw database assertions</span>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Grid -->
+        <div class="dashboard-grid">
+            
+            <!-- Left Side Panel (Targets List and Add Form) -->
+            <div class="panel" style="gap: 1.75rem;">
+                
+                <!-- Monitor Targets List -->
+                <div>
+                    <div class="panel-header">
+                        <h2 class="panel-title">
+                            <i class="fa-solid fa-server"></i> Monitored Targets
+                        </h2>
+                        <span class="kpi-sub" id="refresh-indicator">Auto-refreshing</span>
+                    </div>
+                    
+                    <div class="monitored-list" id="targets-list-container">
+                        <div style="text-align: center; padding: 3rem; color: var(--color-text-muted);">
+                            <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2.2rem; margin-bottom: 1rem; color: var(--color-primary);"></i>
+                            <p>Loading monitoring nodes...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Website Target Form -->
+                <div>
+                    <div class="panel-header" style="margin-bottom: 1.2rem;">
+                        <h2 class="panel-title">
+                            <i class="fa-solid fa-plus"></i> Add Monitor Target
+                        </h2>
+                    </div>
+                    
+                    <form id="add-target-form" class="form-grid">
+                        <div class="form-group">
+                            <label for="site-name">Friendly Name</label>
+                            <input type="text" id="site-name" placeholder="e.g. Google Search" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="site-id">Unique Key Slug (Lowercase)</label>
+                            <input type="text" id="site-id" placeholder="e.g. google" required pattern="[a-z0-9_-]+">
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label for="site-url">Endpoint URL</label>
+                            <input type="url" id="site-url" placeholder="https://example.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="check-type">Check Protocol</label>
+                            <select id="check-type">
+                                <option value="request">HTTP Head/Get Request (Fast)</option>
+                                <option value="browser">Playwright Headless Browser (Full Render)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="latency-threshold">Latency Alert Trigger (ms)</label>
+                            <input type="number" id="latency-threshold" value="2000" min="200" step="100">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="grid-column: span 2; justify-content: center; margin-top: 0.5rem;">
+                            <i class="fa-solid fa-circle-plus"></i> Add Node to Cluster
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+
+            <!-- Right Side Panel (Telemetry Details and Screenshot HUD) -->
+            <div class="panel" id="telemetry-details-panel">
+                
+                <div class="panel-header">
+                    <h2 class="panel-title" id="selected-site-title">
+                        <i class="fa-solid fa-chart-line"></i> Node Telemetry: Select a Target
+                    </h2>
+                </div>
+
+                <!-- Latest Screenshot HUD with OpenCV Overlay -->
+                <div>
+                    <h3 style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.65rem; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">
+                        <i class="fa-regular fa-image"></i> Render Viewport Capture (OpenCV HUD Overlay)
+                    </h3>
+                    <div class="browser-mock-frame">
+                        <div class="browser-mock-header">
+                            <div class="browser-mock-buttons">
+                                <span class="mock-dot dot-red"></span>
+                                <span class="mock-dot dot-yellow"></span>
+                                <span class="mock-dot dot-green"></span>
+                            </div>
+                            <div class="browser-mock-address-bar" id="hud-mock-address">about:blank</div>
+                        </div>
+                        <div class="screenshot-container" id="screenshot-hud-container">
+                            <div class="screenshot-placeholder">
+                                <i class="fa-solid fa-photo-film placeholder-icon"></i>
+                                <p>Select a browser-monitored target to display telemetry capture</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Latency Chart.js Graph -->
+                <div>
+                    <h3 style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.65rem; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">
+                        <i class="fa-solid fa-timeline"></i> Latency Trend History (Last 10 checks)
+                    </h3>
+                    <div style="position: relative; height: 180px; width: 100%;">
+                        <canvas id="latency-trend-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- NumPy Analytical Insights -->
+                <div>
+                    <h3 style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.65rem; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">
+                        <i class="fa-solid fa-calculator"></i> NumPy Statistical Diagnostic Insights
+                    </h3>
+                    <div class="stats-details" id="numpy-stats-grid">
+                        <div class="stat-box" style="grid-column: span 2; text-align: center; color: var(--color-text-muted);">
+                            <p>Select a target to load statistical distributions</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Lower Panel (Historical Log Table) -->
+        <div class="history-section">
+            <div class="panel-header" style="border: none; padding-bottom: 0.5rem;">
+                <h2 class="panel-title">
+                    <i class="fa-solid fa-list-check"></i> System Assertion Audit Logs (Recent events)
+                </h2>
+            </div>
+            
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Checked Timestamp</th>
+                            <th>Target Node</th>
+                            <th>Protocol</th>
+                            <th>Latency</th>
+                            <th>Uptime Status</th>
+                            <th>Response Assert</th>
+                            <th>Error Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-table-body">
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 3rem; color: var(--color-text-muted);">
+                                No raw assert logs loaded.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script Entrypoint -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

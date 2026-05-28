@@ -1,0 +1,9 @@
+{
+    "check_interval_minutes": 5,
+    "smtp_server": "smtp.gmail.com",
+    "smtp_port": 587,
+    "smtp_username": null,
+    "smtp_password": null,
+    "alert_receiver_email": null,
+    "enable_email_alerts": false
+}

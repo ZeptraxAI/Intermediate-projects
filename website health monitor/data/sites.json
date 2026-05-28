@@ -1,0 +1,42 @@
+[
+    {
+        "id": "google",
+        "name": "Google",
+        "url": "https://www.google.com",
+        "check_type": "request",
+        "timeout_seconds": 5,
+        "latency_threshold_ms": 1000
+    },
+    {
+        "id": "github",
+        "name": "GitHub",
+        "url": "https://github.com",
+        "check_type": "browser",
+        "timeout_seconds": 15,
+        "latency_threshold_ms": 3000
+    },
+    {
+        "id": "httpbin_ok",
+        "name": "Httpbin (OK Test)",
+        "url": "https://httpbin.org/status/200",
+        "check_type": "request",
+        "timeout_seconds": 10,
+        "latency_threshold_ms": 1500
+    },
+    {
+        "id": "httpbin_slow",
+        "name": "Httpbin (Slow Test)",
+        "url": "https://httpbin.org/delay/5",
+        "check_type": "request",
+        "timeout_seconds": 10,
+        "latency_threshold_ms": 2000
+    },
+    {
+        "id": "httpbin_404",
+        "name": "Httpbin (404 Down Test)",
+        "url": "https://httpbin.org/status/404",
+        "check_type": "request",
+        "timeout_seconds": 10,
+        "latency_threshold_ms": 2000
+    }
+]
